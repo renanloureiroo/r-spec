@@ -11,3 +11,7 @@ Mostra:
 ## Como esta feature foi produzida
 
 [`walkthrough.md`](walkthrough.md) simula o **processo SDD completo** que gera esta pasta: o prompt que aciona cada skill, a finalização de cada etapa e o **reset de contexto** entre uma fase e a próxima (acionadas manualmente, uma por vez).
+
+## Subagent de exemplo
+
+[`agents/task-reviewer.md`](agents/task-reviewer.md) é um **exemplo de subagent** do Claude Code (não faz parte do pipeline padrão): um revisor de task independente, que roda em contexto isolado e gera `[num]_task_review.md`. Copie-o para `.claude/agents/` no seu projeto e adapte às suas convenções — cada projeto cria os subagents que precisa. Veja a seção "Subagents complementares" no [README principal](../README.md).
