@@ -1,0 +1,9 @@
+# Exemplo de feature
+
+`tasks/01-painel-clima/` abaixo é uma **referência viva** de como uma feature fica depois de passar pelo pipeline de SDD. No seu projeto, essa pasta nasceria em `tasks/01-painel-clima/` (não em `examples/`) — aqui ela vive sob `examples/` só para servir de amostra.
+
+Mostra:
+
+- a convenção de pasta `tasks/<NN>-<slug>/` com o contador `01`;
+- os artefatos das fases de criação (`prd.md`, `techspec.md`, `tasks.md`) e o `bugs.md`. Num projeto real, `codereview.md`, `qa.md` e `bugfix.md` também aparecem nesta pasta;
+- o **formato compartilhado de `bugs.md`** entre `execute-qa` (que abre o bug, ver `BUG-02` com `Status: Aberto`) e `execute-bugfix` (que o fecha, ver `BUG-01` com `Status: Corrigido`).
