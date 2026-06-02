@@ -1,4 +1,4 @@
-# sdd — Spec-Driven Development Skills
+# SDD — Spec-Driven Development Skills
 
 Conjunto de **skills de processo** para desenvolvimento orientado a especificação (Spec-Driven Development). Cada fase do fluxo — do PRD ao bugfix — é uma skill portável, instalável em qualquer projeto e compatível com vários harnesses (Claude Code, Codex, Cursor, etc.) via [`npx skills`](https://github.com/vercel-labs/skills).
 
@@ -11,15 +11,15 @@ create-prd  →  create-techspec  →  create-tasks  →  execute-task  →  exe
    (o quê)        (o como)          (o plano)       (implementar)     (review estático)   (QA E2E)      (corrigir)
 ```
 
-| Skill | Função | Saída |
-|-------|--------|-------|
-| `create-prd` | Levanta requisitos (faz perguntas antes de redigir) | `tasks/<NN>-<feature>/prd.md` |
-| `create-techspec` | Traduz o PRD em arquitetura e decisões técnicas | `tasks/<NN>-<feature>/techspec.md` |
-| `create-tasks` | Quebra em tarefas com testes, aprovadas antes de gerar | `tasks/<NN>-<feature>/tasks.md` + `[num]_task.md` |
-| `execute-task` | Implementa a próxima tarefa pendente | código + testes, marca `tasks.md` |
-| `execute-review` | Code review via `git diff` contra TechSpec/Tasks/rules | `tasks/<NN>-<feature>/codereview.md` |
-| `execute-qa` | QA funcional: E2E (Playwright), a11y, visual | `tasks/<NN>-<feature>/qa.md` + `bugs.md` |
-| `execute-bugfix` | Corrige causa raiz dos bugs + testes de regressão | `tasks/<NN>-<feature>/bugfix.md` + `bugs.md` atualizado |
+| Skill             | Função                                                 | Saída                                                   |
+| ----------------- | ------------------------------------------------------ | ------------------------------------------------------- |
+| `create-prd`      | Levanta requisitos (faz perguntas antes de redigir)    | `tasks/<NN>-<feature>/prd.md`                           |
+| `create-techspec` | Traduz o PRD em arquitetura e decisões técnicas        | `tasks/<NN>-<feature>/techspec.md`                      |
+| `create-tasks`    | Quebra em tarefas com testes, aprovadas antes de gerar | `tasks/<NN>-<feature>/tasks.md` + `[num]_task.md`       |
+| `execute-task`    | Implementa a próxima tarefa pendente                   | código + testes, marca `tasks.md`                       |
+| `execute-review`  | Code review via `git diff` contra TechSpec/Tasks/rules | `tasks/<NN>-<feature>/codereview.md`                    |
+| `execute-qa`      | QA funcional: E2E (Playwright), a11y, visual           | `tasks/<NN>-<feature>/qa.md` + `bugs.md`                |
+| `execute-bugfix`  | Corrige causa raiz dos bugs + testes de regressão      | `tasks/<NN>-<feature>/bugfix.md` + `bugs.md` atualizado |
 
 Todas as fases trabalham sobre a pasta `tasks/<NN>-<feature>/` — cada feature fica autocontida (PRD, TechSpec, tasks, relatórios e bugs). Convém versionar essa pasta junto com o código.
 
@@ -59,7 +59,7 @@ As skills **não se encadeiam automaticamente** — você conduz o pipeline manu
 
 Ordem típica para uma feature nova:
 
-1. **`create-prd`** — gera `tasks/<NN>-<slug>/prd.md` (faz perguntas antes de redigir; cria o contador `NN`).
+1. **`create-prd`** — gera `tasks/<NN>-<slug>/prd.md` (faz perguntas antes de redigir; cria o contador `NN`). _Dica:_ já passe os **requisitos base** no prompt inicial — quanto mais contexto, menos perguntas a skill faz.
 2. **`create-techspec`** — gera `techspec.md`.
 3. **`create-tasks`** — gera `tasks.md` + tarefas (aprove a lista de alto nível primeiro).
 4. **`execute-task`** — implementa a próxima tarefa pendente. **Repita** até concluir todas.
@@ -67,13 +67,15 @@ Ordem típica para uma feature nova:
 6. **`execute-qa`** — QA funcional; gera `qa.md` e abre os bugs em `bugs.md`.
 7. **`execute-bugfix`** — corrige os bugs de `bugs.md`; volte ao **`execute-qa`** para revalidar. Repita o ciclo QA ↔ bugfix até o QA aprovar sem bugs abertos.
 
-Como acionar depende do harness — ex.: no Claude Code, peça *"use a skill `create-prd` para a feature X"*; em outros, invoque a skill equivalente. **Não pule etapas:** cada fase pressupõe os artefatos da anterior em `tasks/<NN>-<slug>/`.
+Como acionar depende do harness — ex.: no Claude Code, peça _"use a skill `create-prd` para a feature X"_; em outros, invoque a skill equivalente. **Não pule etapas:** cada fase pressupõe os artefatos da anterior em `tasks/<NN>-<slug>/`.
+
+> 📖 **Passo a passo completo:** veja [`examples/walkthrough.md`](examples/walkthrough.md) — uma simulação ponta a ponta com o prompt de cada fase, a finalização de cada etapa e os **resets de contexto** entre elas.
 
 ## O que ajustar por projeto
 
 A maioria das skills é genérica, mas algumas têm um bloco **"Configuração por projeto"** no topo do `SKILL.md`. Edite-o após instalar:
 
-- **`execute-qa`** *(a que mais muda)* — URL/porta da app, comando para subir o ambiente, ferramenta de E2E, onde salvar evidências e relatório.
+- **`execute-qa`** _(a que mais muda)_ — URL/porta da app, comando para subir o ambiente, ferramenta de E2E, onde salvar evidências e relatório.
 - **`execute-bugfix`** — comando de testes e de typecheck do projeto.
 - **`execute-review`** — comando de testes/coverage, branch base, local das convenções.
 
