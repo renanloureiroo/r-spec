@@ -1,4 +1,12 @@
-# SDD — Spec-Driven Development Skills
+![r-spec — Spec-Driven Development Skills](./assets/banner.png)
+
+<!-- README-I18N:START -->
+
+**Português** | [English](./README.en.md)
+
+<!-- README-I18N:END -->
+
+# r-spec — Spec-Driven Development Skills
 
 Conjunto de **skills de processo** para desenvolvimento orientado a especificação (Spec-Driven Development). Cada fase do fluxo — do PRD ao bugfix — é uma skill portável, instalável em qualquer projeto e compatível com vários harnesses (Claude Code, Codex, Cursor, etc.) via [`npx skills`](https://github.com/vercel-labs/skills).
 
@@ -40,16 +48,16 @@ Executar:
 
 ```bash
 # Menu interativo: escolha skills e harnesses
-npx skills add https://github.com/renanloureiroo/sdd
+npx skills add https://github.com/renanloureiroo/r-spec
 
 # Listar as skills do repo sem instalar
-npx skills add https://github.com/renanloureiroo/sdd --list
+npx skills add https://github.com/renanloureiroo/r-spec --list
 
 # Tudo, sem prompts (CI)
-npx skills add https://github.com/renanloureiroo/sdd --all -y
+npx skills add https://github.com/renanloureiroo/r-spec --all -y
 
 # Skills específicas para harnesses específicos
-npx skills add https://github.com/renanloureiroo/sdd --skill execute-qa -a claude-code -a cursor
+npx skills add https://github.com/renanloureiroo/r-spec --skill execute-qa -a claude-code -a cursor
 ```
 
 O `npx skills` espelha cada skill para o formato do harness escolhido (`.claude/skills/`, `.agents/skills/`, `.cursor/rules/`, etc.) — não é preciso manter cópias manuais. Use `--list` para ver as skills disponíveis e `-g` para instalar no diretório do usuário (global) em vez do projeto.
@@ -97,7 +105,7 @@ Estas skills de **processo** não definem os padrões de código do seu projeto 
 - Estrutura de pastas do repositório
 - UI/UX e design system
 
-Mantenha-as no diretório de skills do seu harness, ao lado das skills de SDD.
+Mantenha-as no diretório de skills do seu harness, ao lado das skills de r-spec.
 
 ## Subagents complementares (opcional, Claude Code)
 
@@ -116,7 +124,7 @@ execute-task ──►  task-reviewer (subagent, contexto isolado)  ──►  e
 
 ## Configurar o `AGENTS.md` do projeto
 
-As fases de SDD consultam as **convenções do projeto** (regras + quais skills de arquitetura/padrões carregar), mas não as definem. Esse mapa fica no `AGENTS.md` (na **raiz** do projeto) — lido nativamente por Codex, Cursor e outros, e referenciável pelo Claude Code via `CLAUDE.md`.
+As fases do r-spec consultam as **convenções do projeto** (regras + quais skills de arquitetura/padrões carregar), mas não as definem. Esse mapa fica no `AGENTS.md` (na **raiz** do projeto) — lido nativamente por Codex, Cursor e outros, e referenciável pelo Claude Code via `CLAUDE.md`.
 
 Copie o template e preencha:
 
@@ -124,7 +132,7 @@ Copie o template e preencha:
 cp templates/AGENTS.md ./AGENTS.md   # na raiz do seu projeto
 ```
 
-O template ([`templates/AGENTS.md`](templates/AGENTS.md)) é focado nas **referências do projeto** (não documenta o pipeline de SDD — isso vive aqui no README). Já vem com as seções:
+O template ([`templates/AGENTS.md`](templates/AGENTS.md)) é focado nas **referências do projeto** (não documenta o pipeline do r-spec — isso vive aqui no README). Já vem com as seções:
 
 - **Stack** e **Comandos** — para o agente carregar as skills certas e rodar testes/lint/typecheck.
 - **Regras do projeto** — idioma do código, nomenclatura, limites, padrões de erro/log, etc.
@@ -145,7 +153,7 @@ Configure-os no seu harness (ex.: `.mcp.json` / config de MCP do Claude Code, Co
 ## Estrutura do repositório
 
 ```
-sdd/
+r-spec/
 ├── README.md
 ├── LICENSE
 ├── templates/
