@@ -1,4 +1,4 @@
-# AGENTS.md — [Nome do Projeto]
+# AGENTS.md — Painel Clima
 
 Guia para agentes de IA trabalharem neste repositório. Leia antes de planejar, implementar ou revisar.
 
