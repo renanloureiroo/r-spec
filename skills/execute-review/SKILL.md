@@ -11,6 +11,7 @@ Você é um assistente IA especializado em Code Review. Analise o código produz
 <critical>Verifique se o código está de acordo com as rules e skills do projeto</critical>
 <critical>TODOS os testes devem passar antes de aprovar o review</critical>
 <critical>A implementação deve seguir EXATAMENTE a TechSpec e as Tasks</critical>
+<critical>Determine o **tipo do projeto** (frontend / backend / fullstack) no `AGENTS.md`/`CLAUDE.md` e aplique o foco de review da(s) camada(s) correspondente(s) — ver "Foco por camada"</critical>
 
 > **Relação com `execute-task`:** o `execute-task` faz um auto-review rápido por tarefa, durante a implementação. Esta skill é o review consolidado da **feature inteira** (todo o diff vs. a branch base), executado antes de aprovar/mesclar.
 
@@ -31,6 +32,17 @@ Você é um assistente IA especializado em Code Review. Analise o código produz
 4. Confirmar aderência à TechSpec e Tasks
 5. Identificar code smells e oportunidades de melhoria
 6. Gerar relatório de code review
+
+## Foco por camada (frontend / backend)
+
+> Esta skill é **genérica**: o foco do review muda conforme o **tipo do projeto**, mas o procedimento é o mesmo. Carregue a referência da camada em vez de inflar esta skill.
+
+1. Descubra o **tipo do projeto** na seção *Tipo de projeto* do `AGENTS.md`/`CLAUDE.md`: `frontend`, `backend` ou `fullstack`.
+2. **Carregue a referência de foco** correspondente e aplique seus checklists na Etapa 7 (qualidade de código):
+   - Frontend → leia [`references/frontend.md`](./references/frontend.md)
+   - Backend → leia [`references/backend.md`](./references/backend.md)
+   - **Fullstack** → leia **as duas**, segmentando pelo que o `git diff` tocou (ex.: `frontend/` vs `backend/`).
+3. Antes de apontar problemas, **carregue também as skills de convenção** que o projeto declarou para a camada (ver *Skills de arquitetura e padrões* no `AGENTS.md`) — elas definem o padrão contra o qual você avalia. Se o projeto não tiver skills de convenção para a camada, use a referência acima como baseline.
 
 ## Pré-requisitos / Localização dos arquivos
 
@@ -103,6 +115,8 @@ Execute a suíte de testes do projeto (ver Configuração por projeto) e verifiq
 <critical>O REVIEW NÃO PODE SER APROVADO SE ALGUM TESTE FALHAR</critical>
 
 ### 7. Análise de qualidade de código (obrigatório)
+
+> Além da tabela genérica abaixo, aplique o checklist da **referência de camada** carregada em "Foco por camada" (`references/frontend.md` e/ou `references/backend.md`).
 
 | Aspecto | Verificação |
 |---------|-------------|

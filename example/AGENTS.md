@@ -2,6 +2,12 @@
 
 Guia para agentes de IA trabalharem neste repositório. Leia antes de planejar, implementar ou revisar.
 
+## Tipo de projeto
+
+- **Tipo:** `fullstack`
+
+> Projeto com `frontend/` (React) e `backend/` (Express). As skills de processo (`execute-review`, `execute-qa`) e os subagents de review aplicam o ramo correspondente, segmentando pelo que cada mudança toca (`frontend/` vs `backend/`).
+
 ## Stack
 
 <!-- Resuma a stack para o agente carregar as skills certas. -->
@@ -66,6 +72,18 @@ Consulte o `SKILL.md` da skill em `.claude/skills/<nome>/` (ou `.agents/skills/<
 
 - **Backend HTTP:** `express-rest-api` → `nodejs-backend-patterns`
 - **Frontend:** `react-frontend-expert` (+ siga o `DESIGN.md` para UI)
+
+## Subagents de review (Claude Code)
+
+Subagents em `.claude/agents/` revisam uma task em **contexto isolado** (sem o viés de quem implementou), por task, depois do `execute-task` e antes do `execute-review`. Como o projeto é `fullstack`, escolha pelo que a task tocou:
+
+| Subagent | Use para… |
+| -------- | --------- |
+| `frontend-reviewer` | Tasks de **frontend** (`frontend/`) — carrega `react-frontend-expert` e o `DESIGN.md`. |
+| `backend-reviewer` | Tasks de **backend** (`backend/`) — carrega `express-rest-api` / `nodejs-backend-patterns`. |
+| `task-reviewer` | Review genérico, quando a task não se encaixa claramente em uma camada. |
+
+> Task que cruza as duas camadas: rode `frontend-reviewer` e `backend-reviewer`.
 
 ## MCPs
 

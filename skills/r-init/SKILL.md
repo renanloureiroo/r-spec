@@ -1,0 +1,177 @@
+---
+name: r-init
+description: Inicializa um projeto para o pipeline r-spec (Spec-Driven Development). Detecta/pergunta o contexto (tipo de projeto, stack, comandos, idioma, harness), gera o AGENTS.md a partir do template, cria o CLAUDE.md se for Claude Code, instala os subagents de review conforme o tipo de projeto e cria os esqueletos das skills de convenção — preenchendo o que descobre e deixando placeholders claros do que cada seção precisa detalhar. Acionar UMA VEZ ao adotar o r-spec num projeto novo ou existente, antes de rodar create-prd. Não usar para criar PRD/feature (use create-prd) nem para implementar código.
+---
+
+# r-init — inicializar o projeto para o r-spec
+
+Você prepara o projeto para o pipeline r-spec: cria o **mapa de convenções** (`AGENTS.md`), o ponteiro do Claude Code (`CLAUDE.md`), os **subagents de review** e os **esqueletos das skills de convenção** — sempre preenchendo o que dá para descobrir e deixando o resto como placeholders explícitos para o usuário completar.
+
+<critical>NÃO INVENTE stack, comandos, portas ou regras. O que você não conseguir confirmar (do repo ou perguntando) vira um placeholder `[ … ]` ou `<!-- TODO: … -->`, nunca um palpite apresentado como fato.</critical>
+<critical>NÃO SOBRESCREVA arquivos existentes (AGENTS.md, CLAUDE.md, subagents, skills) sem mostrar o que mudaria e confirmar com o usuário. Em CLAUDE.md já existente, apenas ANEXE a linha apontando para o AGENTS.md.</critical>
+<critical>Esta skill faz scaffolding — ela NÃO escreve o conteúdo final das convenções. Quem detalha cada seção é o usuário; seu papel é montar a estrutura e orientar o que preencher.</critical>
+<critical>PERGUNTE sempre que precisar decidir algo que não dá para inferir do repo com segurança (tipo de projeto, harness, quais subagents instalar, comandos, idioma, pasta de specs). Use a ferramenta de perguntar do harness se houver; senão, pergunte em texto e aguarde a resposta. É melhor uma rodada de perguntas do que um palpite errado.</critical>
+
+## Harnesses-alvo e princípio de layout (fonte única + symlinks)
+
+Foco nos harnesses: **Cursor, Codex e Gemini/Antigravity**. Todos leem o `AGENTS.md` da raiz nativamente — esse é o mapa de convenções universal, criado uma vez (Etapa 3) e não duplicado.
+
+<critical>Os artefatos gerados (subagents e skills de convenção) têm UMA fonte da verdade em `.agents/` (formato Markdown agentskills.io). Codex, Gemini e Antigravity consomem essa fonte diretamente — nada a fazer. Só o **Cursor** precisa de espelho, via **symlink** para `.agents/` (nunca cópia).</critical>
+
+- **Fonte:** `.agents/agents/<nome>.md` (subagents) e `.agents/skills/<nome>/` (skills de convenção).
+
+| Harness | Lê de | Mecanismo |
+| ------- | ----- | --------- |
+| **Codex / Gemini / Antigravity** | `.agents/` (padrão nativo) | **nada a fazer** — usa a fonte direto |
+| **Cursor** | `.cursor/agents/<nome>.md` (Markdown + YAML) | **symlink** → `../../.agents/agents/<nome>.md` |
+
+> Codex, Gemini e Antigravity funcionam no padrão `.agents/` — não precisam de pasta própria nem symlink; basta a fonte. Só o **Cursor** exige espelho (symlink). Versão global do Cursor: `~/.cursor/agents/`.
+
+## Objetivos
+
+1. Levantar o contexto do projeto (detectando do repo + perguntando o que faltar).
+2. Gerar `AGENTS.md` na raiz a partir do template — lido nativamente por Cursor, Codex e Gemini/Antigravity.
+3. Criar a fonte dos subagents de review em `.agents/agents/` (Codex/Gemini/Antigravity leem direto; só Cursor recebe symlink).
+4. Criar os esqueletos das skills de convenção (uma por camada) em `.agents/skills/` (idem: só Cursor recebe symlink).
+5. Opcional: gerar um ponteiro por harness (ex.: `GEMINI.md`) — só onde fizer sentido; os alvos já leem `AGENTS.md`.
+6. Entregar um **roteiro de próximos passos**: exatamente o que escrever em cada arquivo/seção.
+
+## Arquivos desta skill (references)
+
+Use estes templates embutidos — não dependa do repositório r-spec, eles viajam com a skill:
+
+- `references/agents-template.md` — template do `AGENTS.md` (copie e preencha).
+- `references/pointer-template.md` — ponteiro mínimo por harness (ex.: `GEMINI.md`/`CLAUDE.md`) apontando para `@AGENTS.md`.
+- `references/convention-skill-template.md` — esqueleto de uma skill de convenção.
+- `references/frontend-reviewer.md`, `references/backend-reviewer.md`, `references/task-reviewer.md` — subagents de review prontos para adaptar.
+
+## Fluxo de trabalho
+
+### 1. Descobrir o contexto (antes de perguntar, inspecione)
+
+Leia o repositório para inferir o máximo possível e **só pergunte o que não der para descobrir**:
+
+- **Tipo de projeto:** há `frontend/` e `backend/`? só um? → `frontend` | `backend` | `fullstack`.
+- **Stack:** `package.json` (deps: React/Express/Vite/Tailwind/Vitest/Playwright…), `tsconfig.json`, lockfile (npm/pnpm/yarn), runtime.
+- **Comandos:** scripts do `package.json` (`dev`, `build`, `test`, `test:coverage`, `typecheck`, `lint`, `test:e2e`).
+- **Harness:** existe `.agents/`, `.cursor/`? A fonte é sempre `.agents/`; só o Cursor (`.cursor/`) precisa de symlink além dela.
+- **Specs:** já existe pasta de specs (`tasks/`, `docs/specs/`)? Padrão do r-spec: `tasks/<NN>-<feature>/`.
+- **Idioma/regras:** olhe README, configs de lint, comentários no código para inferir idioma do código e da doc.
+
+### 2. Esclarecer (pergunte só as lacunas — obrigatório)
+
+Com base no que faltou, pergunte de forma objetiva (use a ferramenta de perguntar do harness se houver). Confirme principalmente:
+
+- **Tipo de projeto** (se ambíguo) — define subagents e o ramo de `execute-review`/`execute-qa`.
+- **Harness(es) alvo** — Codex/Gemini/Antigravity leem a fonte `.agents/` direto; só o **Cursor** precisa de symlink em `.cursor/agents/`.
+- **Comandos** que não estão claros nos scripts (subir app, E2E, typecheck) e **URL/porta local**.
+- **Idioma do código e da documentação**, branch base.
+- **Pasta de specs** (manter `tasks/` ou outra).
+- **MCPs** disponíveis (Context7, Playwright).
+
+> Tente uma rodada única de perguntas. Não trave o init: o que ficar indefinido vira placeholder no arquivo.
+
+### 3. Gerar o `AGENTS.md` (raiz)
+
+- Base: `references/agents-template.md`. Salve em `./AGENTS.md`.
+- Preencha **Tipo de projeto, Stack, Comandos, Regras, URL/porta, branch** com o que descobriu/confirmou.
+- Na tabela **Skills de arquitetura e padrões**, liste as skills de convenção que você vai criar na Etapa 6 (mesmos nomes).
+- Na tabela **Subagents de review**, deixe só as linhas dos subagents que você instalou na Etapa 5.
+- Tudo que não foi confirmado fica como `[ … ]`/`<!-- TODO -->`. Apague os blocos de comentário e exemplos que não se aplicam.
+
+### 4. Ponteiro por harness (opcional)
+
+Cursor, Codex e Gemini/Antigravity **leem o `AGENTS.md` da raiz nativamente** — em geral nenhum ponteiro extra é preciso. Crie um só quando o harness usar um arquivo próprio e o usuário quiser:
+
+- **Gemini/Antigravity** → `GEMINI.md` apontando para `@AGENTS.md` (a partir de `references/pointer-template.md`).
+- **Claude Code** (se também estiver em uso) → `CLAUDE.md` apontando para `@AGENTS.md`.
+- Se o arquivo **já existe**: não sobrescreva — apenas anexe a linha `Siga as convenções em @AGENTS.md` se ainda não houver.
+
+### 5. Instalar os subagents de review (fonte em `.agents/` + symlinks)
+
+Subagents de review rodam em **contexto isolado**. O init cria a **fonte** em `.agents/agents/`; Codex, Gemini e Antigravity a leem direto, e só o Cursor recebe **symlink**. Os templates viajam embutidos em `references/`.
+
+**5.1. Confirme com o usuário o que instalar.** Sugira pelo tipo de projeto e pergunte (a decisão é dele):
+
+| Tipo de projeto | Sugestão padrão |
+| --------------- | --------------- |
+| `frontend`  | `frontend-reviewer` (+ `task-reviewer` opcional) |
+| `backend`   | `backend-reviewer` (+ `task-reviewer` opcional) |
+| `fullstack` | `frontend-reviewer` + `backend-reviewer` (+ `task-reviewer`) |
+
+Pergunte também: **quais harnesses** usar e se quer o `task-reviewer` genérico além dos especializados. Lembre: Codex/Gemini/Antigravity já leem a fonte `.agents/` — só o Cursor precisa de symlink.
+
+**5.2. Localize os templates.** Ache a pasta onde esta skill foi instalada (ex.: `.agents/skills/r-init/`, `.cursor/rules/r-init/`, ou caminho global com `-g`); os templates ficam em `<pasta-da-skill>/references/`.
+
+**5.3. Crie a fonte** em `.agents/agents/` copiando cada reviewer escolhido:
+
+```bash
+mkdir -p .agents/agents
+cp <pasta-da-skill>/references/frontend-reviewer.md .agents/agents/frontend-reviewer.md
+cp <pasta-da-skill>/references/backend-reviewer.md  .agents/agents/backend-reviewer.md
+cp <pasta-da-skill>/references/task-reviewer.md      .agents/agents/task-reviewer.md
+```
+
+> Se não localizar a pasta da skill, recrie a fonte escrevendo o conteúdo do template direto em `.agents/agents/<reviewer>.md` com a ferramenta de escrita.
+
+**5.4. Espelhe para o Cursor (só se for usar Cursor).** Codex, Gemini e Antigravity já leem a fonte `.agents/agents/` — não faça nada para eles. Para o Cursor, crie symlinks relativos (mantém o repo portátil):
+
+```bash
+mkdir -p .cursor/agents
+for a in frontend-reviewer backend-reviewer task-reviewer; do
+  [ -f ".agents/agents/$a.md" ] || continue
+  ln -sf "../../.agents/agents/$a.md" ".cursor/agents/$a.md"
+done
+```
+
+Confira o frontmatter para o Cursor (`name`, `description`, `model`, `readonly`, `is_background`). _Edite sempre a fonte em `.agents/agents/`_ — o symlink reflete.
+
+**5.5. Adapte a fonte** ao projeto: idioma do artefato e referências de convenção (aponte para as skills de convenção e o `AGENTS.md` reais). Não sobrescreva um subagent existente sem confirmar.
+
+### 6. Criar os esqueletos das skills de convenção (uma por camada)
+
+Mesma estratégia dos subagents: **fonte em `.agents/skills/` + symlinks**. Para cada camada, crie a fonte `.agents/skills/<nome>/SKILL.md` a partir de `references/convention-skill-template.md`:
+
+- **frontend** → ex.: `react-frontend-conventions` (componentes, hooks, a11y, data fetching).
+- **backend** → ex.: `express-rest-conventions` (rotas, validação, erros, segurança).
+- **fullstack** → crie as duas.
+- Opcionais conforme a stack: `code-standards`, `<linguagem>-conventions`, `<runner>-testing`, `repo-folder-structure`, `ui-ux`.
+
+Codex, Gemini e Antigravity leem as skills da fonte `.agents/skills/` — nada a fazer. Para o **Cursor**, espelhe o diretório da skill via symlink:
+
+```bash
+mkdir -p .cursor/rules
+for s in react-frontend-conventions express-rest-conventions; do
+  [ -d ".agents/skills/$s" ] || continue
+  ln -sf "../../.agents/skills/$s" ".cursor/rules/$s"
+done
+```
+
+> Edite sempre a fonte em `.agents/skills/` — o symlink reflete.
+
+Preencha o `name`/`description` de cada esqueleto e o cabeçalho; deixe o corpo (Convenções, Exemplos, Antipadrões) com os placeholders `[ … ]` para o usuário escrever. **Não invente os padrões** — eles são decisão do time.
+
+### 7. Relatar e orientar os próximos passos (obrigatório)
+
+Liste os arquivos criados e entregue um roteiro do que o usuário precisa **escrever** agora. Para cada item, diga o que detalhar:
+
+- **`AGENTS.md`** — confira/complete os `[ … ]` restantes: Regras do projeto (nomenclatura, tipagem, erros, logging, commits), comandos faltantes, MCPs.
+- **Cada skill de convenção** (`<nome>/SKILL.md`) — escreva a seção **Convenções** com regras concretas e exemplos de código da sua stack; preencha os Antipadrões. É aqui que mora o padrão do projeto.
+- **Subagents** — revise os pontos de foco e o idioma do artefato; ajuste à sua política.
+- **Próxima fase:** quando o `AGENTS.md` e ao menos uma skill de convenção por camada estiverem preenchidos, rode **`create-prd`** para iniciar a primeira feature.
+
+> Aponte explicitamente as seções com `<!-- TODO -->` que ficaram em aberto, para o usuário não esquecer nenhuma.
+
+## Checklist de qualidade
+
+- [ ] Contexto descoberto do repo + lacunas confirmadas com o usuário (sem palpites).
+- [ ] `AGENTS.md` criado na raiz, com Tipo de projeto, Stack e Comandos preenchidos; resto como placeholder.
+- [ ] Subagents de review (fonte em `.agents/agents/`) criados conforme o tipo de projeto; symlink no `.cursor/agents/` só se usar Cursor.
+- [ ] Skills de convenção (fonte em `.agents/skills/`) — uma por camada — criadas; symlink no `.cursor/rules/` só se usar Cursor.
+- [ ] Ponteiro por harness criado só onde necessário (ex.: `GEMINI.md`), sem sobrescrever conteúdo existente.
+- [ ] Tabelas do `AGENTS.md` (skills + subagents) refletem exatamente o que foi criado.
+- [ ] Relatório final com a lista de arquivos/symlinks e o roteiro do que detalhar em cada um.
+
+<critical>NÃO INVENTE stack/comandos/regras — placeholders no lugar de palpites.</critical>
+<critical>NÃO SOBRESCREVA arquivos existentes sem confirmar.</critical>
+<critical>r-init monta a ESTRUTURA; o conteúdo das convenções é escrito pelo usuário.</critical>

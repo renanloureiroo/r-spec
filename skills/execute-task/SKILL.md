@@ -68,7 +68,9 @@ Riscos/Desafios: [Riscos ou desafios identificados]
 
 ### 6. Revisão
 
-1. Execute o agente de review @task-reviewer
+1. Execute o subagent de review da camada da task (se o harness suportar subagents):
+   - Task de **frontend** → `@frontend-reviewer`; task de **backend** → `@backend-reviewer`; sem distinção clara → `@task-reviewer`.
+   - O `AGENTS.md`/`CLAUDE.md` declara o **Tipo de projeto** e mapeia qual usar. Se o projeto não tiver subagents, faça o review inline contra as convenções da camada.
 2. Ajuste os problemas indicados
 3. Não finalize a tarefa até resolver
 

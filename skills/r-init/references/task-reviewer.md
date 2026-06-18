@@ -1,23 +1,3 @@
-<!--
-  EXEMPLO de subagent (Claude Code) — NÃO é uma skill do pipeline.
-  Copie para `.claude/agents/task-reviewer.md` no seu projeto e ADAPTE às suas
-  convenções (stack, idioma, padrões). Cada projeto cria os subagents que precisa.
-
-  Por que um subagent (e não uma skill)? Ele roda em CONTEXTO ISOLADO — um agente
-  que NÃO implementou a task a revisa, sem o viés do auto-review do implementador.
-  Subagents são um recurso específico do Claude Code; outros harnesses podem não
-  ter equivalente. Por isso isto é um exemplo opcional, fora do `npx skills`.
-
-  Posição no pipeline: roda por TASK, depois do `execute-task` e antes do
-  `execute-review` (que é o review consolidado da feature inteira).
-
-  Este é o reviewer GENÉRICO (uma camada só, ou projeto sem distinção clara).
-  Para projetos com frontend e/ou backend, há variantes especializadas em
-  `.claude/agents/`: `frontend-reviewer` (UI/hooks/a11y) e `backend-reviewer`
-  (API/HTTP/DB). Em projetos fullstack, escolha o reviewer pela camada que a
-  task tocou (ou rode os dois se ela cruzar as camadas). O AGENTS.md declara o
-  "Tipo de projeto" e mapeia qual usar.
--->
 ---
 name: task-reviewer
 description: "Use este agente quando uma task foi concluída pela skill `execute-task` e precisa de um review independente, em contexto isolado, antes do review consolidado da feature. Ele valida a qualidade do código, a aderência às convenções do projeto e à TechSpec/Task, e gera o artefato `[num]_task_review.md`."

@@ -12,6 +12,17 @@ A set of **process skills** for Spec-Driven Development. Each phase of the pipel
 
 The skills follow the [agentskills.io](https://agentskills.io) spec: each one is a folder with a `SKILL.md` (frontmatter `name` + `description` + procedure).
 
+## Project setup (once): `r-init`
+
+Before running the pipeline, use the **`r-init`** skill to prepare the project. It:
+
+- detects the context (project type, stack, commands, harness) — and **asks** whatever it can't infer;
+- creates the root `AGENTS.md` from the template, prefilled with what it found;
+- creates the **review subagents** and the **convention-skill skeletons** with a **single source in `.agents/`** (Codex/Gemini/Antigravity read it directly; only Cursor gets a **symlink**);
+- leaves explicit placeholders for what you need to **fill in** in each file, and guides the next steps.
+
+`r-init` does the *scaffolding* — the convention content is written by you. Run it once per project; then follow the pipeline below.
+
 ## The pipeline
 
 ```
@@ -66,6 +77,8 @@ npx skills add https://github.com/renanloureiroo/r-spec --skill execute-qa -a cl
 
 Skills **do not chain automatically** — you drive the pipeline manually, **one phase at a time**, triggering the skill for the current step. This keeps you in control to review and approve each artifact before moving forward.
 
+> **Step 0 (once per project):** run **`r-init`** to generate the `AGENTS.md`, the subagents, and the convention-skill skeletons (see [Project setup](#project-setup-once-r-init)). Then follow the per-feature order below.
+
 Typical order for a new feature:
 
 1. **`create-prd`** — generates `tasks/<NN>-<slug>/prd.md` (asks questions before drafting; creates the `NN` counter). _Tip:_ pass the **base requirements** in the initial prompt — the more context, the fewer questions the skill asks.
@@ -105,7 +118,17 @@ These **process** skills do not define your project's code standards — that is
 - Repository folder structure
 - UI/UX and design system
 
-Keep them in your harness's skills directory, alongside the r-spec skills.
+Keep them in your harness's skills directory, alongside the r-spec skills. **Create at least one convention skill per layer** your project has (one frontend, one backend) — that is where your stack-specific standards live. See real examples in [`example/.agents/skills/`](example/.agents/skills/) (e.g.: `react-frontend-expert`).
+
+### Frontend / backend: one generic skill, focus per layer
+
+The phases that vary most across layers — **`execute-review`** and **`execute-qa`** — are **single and generic**, but adapt to the **project type** declared in `AGENTS.md` (`frontend`, `backend` or `fullstack`). Instead of duplicating the skill, each one loads the right **layer reference**:
+
+- `execute-review` → `references/frontend.md` (UI, hooks, a11y, data fetching) or `references/backend.md` (API/HTTP, validation, errors, security).
+- `execute-qa` → `references/frontend.md` (E2E/Playwright, a11y, visual) or `references/backend.md` (API contract/integration, **no browser**).
+- In **fullstack** projects, both branches apply, segmented by what each change touches (`frontend/` vs `backend/`).
+
+Just declare the **project type** in `AGENTS.md` — the skills pick the branch themselves.
 
 ## Complementary subagents (optional, Claude Code)
 
@@ -113,18 +136,28 @@ In addition to process skills, your project can define **subagents** for tasks t
 
 Subagents are a **Claude Code-specific** feature (`.claude/agents/<name>.md`, with `name`/`description`/`model` frontmatter) — other harnesses may not have an equivalent, and `npx skills` does **not** install them. That is why they **are not part of the standard pipeline**: each project creates the ones it needs, as required.
 
-> 📎 **Ready-to-adapt example:** [`example/agents/task-reviewer.md`](example/agents/task-reviewer.md) — a `task-reviewer` that reviews a `[num]_task.md`, validates against the project conventions and TechSpec, and writes `[num]_task_review.md` in the feature folder. Copy to `.claude/agents/task-reviewer.md` and adjust to your stack/language/standards.
+There is a **generic** reviewer and two **layer-specialized** ones — pick based on the **project type** and the task's layer:
 
-Where it fits in the flow (per **task**, between implementation and feature review):
+| Subagent | Use for… | Project type |
+| -------- | -------- | ------------ |
+| `frontend-reviewer` | **Frontend** tasks (UI/hooks/a11y) | `frontend` or `fullstack` |
+| `backend-reviewer` | **Backend** tasks (API/HTTP/DB) | `backend` or `fullstack` |
+| `task-reviewer` | Generic review (single layer, or no clear distinction) | any |
+
+> 📎 **Ready-to-adapt examples:** [`example/.claude/agents/`](example/.claude/agents/) — `frontend-reviewer`, `backend-reviewer` and `task-reviewer`. Each reviews a `[num]_task.md`, validates against the project conventions and TechSpec, and writes `[num]_task_review.md` in the feature folder. Copy the one(s) you need to `.claude/agents/` and adjust to your stack/language/standards.
+
+Where they fit in the flow (per **task**, between implementation and feature review) — in `fullstack` projects, pick the reviewer by the layer the task touched:
 
 ```
-execute-task ──►  task-reviewer (subagent, contexto isolado)  ──►  execute-review
- implementa        review independente da task → [num]_task_review.md   review da feature → codereview.md
+execute-task ──►  frontend-reviewer / backend-reviewer (subagent, isolated context)  ──►  execute-review
+ implements        independent task review → [num]_task_review.md                          feature review → codereview.md
 ```
 
 ## Configure the project `AGENTS.md`
 
 r-spec phases consult the **project conventions** (rules + which architecture/pattern skills to load), but do not define them. That map lives in `AGENTS.md` (at the **project root**) — natively read by Codex, Cursor and others, and referenceable by Claude Code via `CLAUDE.md`.
+
+> 💡 The **`r-init`** skill automates this step (and more): it creates the `AGENTS.md` prefilled with the detected context, plus the subagents and convention-skill skeletons. See [Project setup](#project-setup-once-r-init). The manual step below still works if you prefer doing it by hand.
 
 Copy the template and fill it in:
 
@@ -134,9 +167,11 @@ cp templates/AGENTS.md ./AGENTS.md   # at your project root
 
 The template ([`templates/AGENTS.md`](templates/AGENTS.md)) is focused on **project references** (does not document the r-spec pipeline — that lives here in the README). It already comes with the sections:
 
+- **Project type** — `frontend`, `backend` or `fullstack`; defines the branch that `execute-review`/`execute-qa` and the review subagents apply.
 - **Stack** and **Commands** — for the agent to load the right skills and run tests/lint/typecheck.
 - **Project rules** — code language, naming, limits, error/log patterns, etc.
 - **Architecture and pattern skills** — "when to trigger / when not to use" table for each convention skill (fill in yours).
+- **Review subagents** — map of which reviewer to use per layer (`frontend-reviewer`/`backend-reviewer`/`task-reviewer`).
 - **MCPs** and, optionally, **plan persistence** and **E2E test notes**.
 
 > If using Claude Code, add a line to `CLAUDE.md` pointing to `AGENTS.md` (e.g.: `Follow the conventions in @AGENTS.md`) to reuse the same map.
@@ -159,14 +194,16 @@ r-spec/
 ├── templates/
 │   └── AGENTS.md                 # template to copy to your project root
 ├── example/
-│   ├── agents/task-reviewer.md   # subagent example (optional, Claude Code)
+│   ├── .claude/agents/           # example subagents: frontend-reviewer, backend-reviewer, task-reviewer
+│   ├── .agents/skills/           # example convention skills (react-frontend-expert, etc.)
 │   └── tasks/01-painel-clima/    # example feature (living reference)
 └── skills/
+    ├── r-init/                # SKILL.md + references/ (setup: AGENTS.md, subagents, convention skills)
     ├── create-prd/SKILL.md
     ├── create-techspec/SKILL.md
     ├── create-tasks/SKILL.md
     ├── execute-task/SKILL.md
-    ├── execute-review/SKILL.md
-    ├── execute-qa/SKILL.md
+    ├── execute-review/         # SKILL.md + references/{frontend,backend}.md
+    ├── execute-qa/             # SKILL.md + references/{frontend,backend}.md
     └── execute-bugfix/SKILL.md
 ```

@@ -12,6 +12,7 @@ Você é um assistente IA especializado em Quality Assurance. Valide que a imple
 <critical>O QA NÃO está completo até que TODAS as verificações passem</critical>
 <critical>Documente TODOS os bugs encontrados com screenshots de evidência</critical>
 <critical>Siga o padrão WCAG 2.2</critical>
+<critical>Determine o **tipo do projeto** (frontend / backend / fullstack) no `AGENTS.md`/`CLAUDE.md` e siga o ramo de QA correspondente — ver "Foco por camada". As etapas de browser/a11y/visual são do ramo **frontend**; backend valida contrato de API sem navegador</critical>
 
 ## Configuração por projeto
 
@@ -31,6 +32,17 @@ Você é um assistente IA especializado em Quality Assurance. Valide que a imple
 4. Realizar verificações visuais
 5. Documentar bugs encontrados
 6. Gerar relatório final de QA
+
+## Foco por camada (frontend / backend)
+
+> Esta skill é **genérica**: o QA muda bastante por camada, mas o contrato de saída (`qa.md` + `bugs.md`) é o mesmo. Carregue a referência da camada em vez de inflar esta skill.
+
+1. Descubra o **tipo do projeto** na seção *Tipo de projeto* do `AGENTS.md`/`CLAUDE.md`: `frontend`, `backend` ou `fullstack`.
+2. **Carregue a referência de QA** correspondente e siga seu fluxo:
+   - Frontend → leia [`references/frontend.md`](./references/frontend.md). As **Etapas 2–5** abaixo (browser, a11y, visual) são o fluxo frontend.
+   - Backend → leia [`references/backend.md`](./references/backend.md). Valide **contrato de API sem navegador**; **pule as Etapas 2–5** (não se aplicam).
+   - **Fullstack** → faça os dois: valide a API (backend) e os fluxos de UI (frontend), e cubra ao menos um fluxo ponta-a-ponta.
+3. Independentemente da camada, registre defeitos em `bugs.md` e o relatório em `qa.md` no **formato compartilhado** (Etapas 6–7).
 
 ## Pré-requisitos / Localização dos arquivos
 
