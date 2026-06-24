@@ -1,152 +1,111 @@
-<!--
-  Template de AGENTS.md — copie para a RAIZ do seu projeto e preencha.
-  Este arquivo é o "mapa" que os agentes leem: tipo do projeto, stack, comandos,
-  regras do projeto e quais skills de convenção carregar. Este AGENTS.md (raiz) é o
-  mapa de convenções UNIVERSAL: Cursor, Codex e Gemini/Antigravity o leem nativamente;
-  o Claude Code o alcança por um CLAUDE.md apontando para "@AGENTS.md". Já os subagents
-  e as skills de convenção têm FONTE ÚNICA em `.agents/`, espelhada por symlink para os
-  harnesses com pasta própria — `.cursor/` (Cursor) e `.claude/` (Claude Code).
+# AGENTS.md — {{NOME_DO_PROJETO}}
 
-  OBRIGATÓRIO: declare o "Tipo de projeto" (frontend / backend / fullstack) logo
-  abaixo — as skills de processo (execute-review, execute-qa) e os subagents de
-  review usam esse campo para escolher o ramo/foco correto. Sem ele, o agente não
-  sabe se deve revisar/QA como frontend, backend ou os dois.
-
-  Ao adaptar: apague estes blocos de comentário e os exemplos que não se aplicarem.
--->
-
-# AGENTS.md — [Nome do Projeto]
+> Template preenchível de `AGENTS.md`. Copie este arquivo para a raiz de um novo
+> repositório, renomeie para `AGENTS.md` e substitua todos os placeholders
+> `{{...}}`. Remova as linhas de instrução em blockquote (`>`) e as seções que
+> não se aplicarem. Mantenha tudo em pt-BR, salvo o código de exemplo.
 
 Guia para agentes de IA trabalharem neste repositório. Leia antes de planejar, implementar ou revisar.
 
-## Tipo de projeto
-
-<!--
-  Declare o tipo do projeto. As skills de processo (execute-review, execute-qa) e os
-  subagents de review usam ESTE campo para escolher o ramo/foco correto. Mantenha um
-  único valor.
--->
-
-- **Tipo:** [ `frontend` | `backend` | `fullstack` ]
-
-> - **frontend** → review/QA focam UI, a11y e data fetching; QA usa Playwright (browser).
-> - **backend** → review/QA focam API/HTTP, validação, erros e segurança; QA valida contrato de API sem navegador.
-> - **fullstack** → aplica os dois ramos, segmentando pelo que cada mudança toca (ex.: `frontend/` vs `backend/`).
+> **{{NOME_DO_PROJETO}}** é {{DESCRICAO_CURTA_DO_PROJETO — o que é, stack
+> principal e estilo de arquitetura. Ex.: "a API backend do X (NestJS + Prisma +
+> Postgres), com arquitetura Hexagonal/DDD"}}.
 
 ## Stack
 
-<!-- Resuma a stack para o agente carregar as skills certas. -->
+> Liste a stack real do projeto. Apague linhas que não se aplicarem e acrescente
+> as que faltarem (cache, fila, observabilidade, etc.).
 
-- **Linguagem/runtime:** [ex.: TypeScript + Node 20 (ESM)]
-- **Backend:** [ex.: Express]
-- **Frontend:** [ex.: React + Vite + Tailwind]
-- **Testes:** [ex.: Vitest (unit/integração) + Playwright (E2E)]
-- **Gerenciador de pacotes:** [ex.: npm]
+- **Linguagem/runtime:** {{LINGUAGEM_E_VERSAO}} + {{RUNTIME_E_VERSAO}} — {{CONFIG_RELEVANTE_DO_COMPILADOR}}
+- **Backend/framework:** {{FRAMEWORK_E_VERSAO}}
+- **Persistência:** {{ORM_OU_DRIVER}} + {{BANCO_DE_DADOS}}
+- **Auth:** {{ESTRATEGIA_DE_AUTH}}
+- **Testes:** {{FRAMEWORK_DE_TESTES}} — {{NIVEIS: unit / integration / e2e}}; {{FERRAMENTAS_AUXILIARES}}
+- **Build/compilação:** {{FERRAMENTA_DE_BUILD}}
+- **Lint/format:** {{LINTER}} + {{FORMATTER}}
+- **Gerenciador de pacotes:** {{GERENCIADOR_DE_PACOTES}}
+- **Infra:** {{INFRA_LOCAL_E_DEPLOY}}
 
 ## Comandos
 
-<!-- Comandos principais do projeto. -->
+> Preencha com os scripts reais (veja `package.json`/`Makefile`/`justfile`).
+> Mantenha apenas as linhas que existem no projeto.
 
-| Ação | Comando |
-| ---- | ------- |
-| Dev (sobe a app) | `[npm run dev]` |
-| Testes | `[npm test]` |
-| Coverage | `[npm run test:coverage]` |
-| Typecheck | `[npm run typecheck]` |
-| E2E | `[npm run test:e2e]` |
-| Lint | `[npm run lint]` |
+| Ação                      | Comando                          |
+| ------------------------- | -------------------------------- |
+| Dev (watch)               | `{{CMD_DEV}}`                    |
+| Build                     | `{{CMD_BUILD}}`                  |
+| Start (prod)              | `{{CMD_START_PROD}}`             |
+| Lint (com `--fix`)        | `{{CMD_LINT}}`                   |
+| Format                    | `{{CMD_FORMAT}}`                 |
+| Testes (unit)             | `{{CMD_TEST_UNIT}}`             |
+| Testes (integração)       | `{{CMD_TEST_INTEGRATION}}`      |
+| Testes (e2e)              | `{{CMD_TEST_E2E}}`              |
+| Todos os testes           | `{{CMD_TEST_ALL}}`             |
+| Coverage                  | `{{CMD_COVERAGE}}`             |
+| Typecheck avulso          | `{{CMD_TYPECHECK}}`            |
+| {{MIGRACOES — gerar}}     | `{{CMD_DB_GENERATE}}`         |
+| {{MIGRACOES — aplicar}}   | `{{CMD_DB_MIGRATE}}`         |
 
-- **URL local da app:** `[http://localhost:5173]`
-- **Branch base:** `[main]`
+- **URL local da app:** `{{URL_LOCAL}}` ({{VARIAVEL_DE_PORTA}})
+- **Docs da API:** `{{ROTA_DOCS}}` · **rotas versionadas:** `{{PREFIXO_DE_ROTAS}}`
+- **Branch base:** `{{BRANCH_BASE}}`
+- **Banco:** {{COMO_SUBIR_O_BANCO_LOCAL}}
 
 ## Regras do projeto
 
-<!-- As regras inegociáveis. Estas são exemplos comuns — ajuste à sua política. -->
+> Estas são as regras inegociáveis. Ajuste valores (aspas, ponto e vírgula,
+> `printWidth`, etc.) ao padrão real configurado no linter/formatter.
 
-- **Idioma do código:** [ex.: todo o código em inglês — variáveis, funções, comentários]
-- **Idioma da documentação:** [ex.: pt-BR]
-- **Nomenclatura:** [ex.: camelCase para vars/funções, PascalCase para tipos/classes, kebab-case para arquivos]
-- **Funções:** [ex.: começam com verbo, ação única, ≤ 50 linhas, ≤ 3 parâmetros]
-- **Sem números mágicos:** use constantes nomeadas
-- **Sem `any`** (ou política de tipagem do projeto)
-- **Tratamento de erro:** [padrão do projeto]
-- **Logging:** [padrão do projeto]
-- **Commits/PRs:** [convenção, ex.: Conventional Commits]
+- **Idioma do código:** {{IDIOMA_CODIGO}} — variáveis, funções, classes, comentários
+- **Idioma da documentação/comunicação:** {{IDIOMA_DOCS}} — PRDs, TechSpecs, tasks, reviews, mensagens de PR
+- **Formatação ({{FORMATTER}}, não negociável):** {{REGRAS_DE_FORMATACAO}}. Rode `{{CMD_FORMAT}}`/`{{CMD_LINT}}` — não formate na mão
+- **Tipagem estrita:** {{REGRA_DE_TIPAGEM — ex.: "sem `any`; prefira `unknown` + narrowing; strictNullChecks ligado"}}
+- **Path aliases:** importe via {{ALIASES}} — não use caminhos relativos longos
+- **Nomenclatura:** {{CONVENCOES_DE_NOMES_E_ARQUIVOS}}
+- **Funções:** começam com verbo, ação única (CQS), sem flags booleanas de comportamento, early return
+- **Sem números mágicos:** constantes nomeadas / enums
+- **Commits/PRs:** Conventional Commits (`feat:`, `fix:`, `chore:`, `test:`, `refactor:`, `docs:` …)
+- **Docs e comentários:** {{REGRA_SOBRE_REFERENCIAS_A_SPECS — ex.: "nunca referenciar conteúdo de specs/tasks de desenvolvimento em docs ou comentários de código"}}
 
-> Regras mais detalhadas também podem viver em `.claude/rules/`, `.cursor/rules/` ou em skills dedicadas — referencie-as aqui.
+### Regras de arquitetura
 
-## Skills de arquitetura e padrões (carregar conforme a tarefa)
+- {{REGRA_DE_ARQUITETURA_PRINCIPAL — ex.: "Usar skill X" ou descrição do estilo}}
 
-<!--
-  IMPORTANTE: o r-spec entrega apenas as skills de PROCESSO (create-prd … execute-bugfix).
-  As skills de CONVENÇÃO (padrões de React, de API Express, de testes, etc.) são
-  ESPECÍFICAS do seu projeto — VOCÊ as cria, com a sua stack e as suas regras, em
-  `.agents/skills/<nome>/` ou `.claude/skills/<nome>/`. As skills de processo as carregam
-  automaticamente a partir desta seção, conforme o "Tipo de projeto" acima.
+## Estrutura de pastas (arquitetura-alvo)
 
-  Crie pelo menos uma skill de convenção por camada que o projeto tem:
-    - frontend  → ex.: `react-frontend-conventions` (componentes, hooks, a11y, data fetching)
-    - backend   → ex.: `express-rest-conventions` (rotas, validação, erros, segurança)
-  Veja exemplos reais em `example/.agents/skills/` (ex.: `react-frontend-expert`).
-  Substitua as linhas abaixo pelas SUAS skills.
--->
+> Descreva a estrutura-alvo para novas features. Ajuste a árvore ao seu projeto.
 
-Consulte o `SKILL.md` da skill em `.agents/skills/<nome>/` (ou `.claude/skills/<nome>/`) antes de implementar ou revisar.
+```
+{{ARVORE_DE_PASTAS}}
+```
 
-| Skill | Acionar para… | Não usar se… |
-| ----- | ------------- | ------------ |
-| `code-standards` | Nomenclatura, CQS, early return, tamanho de métodos/classes | — |
-| `nodejs-typescript-conventions` | TS/Node, ESM, async/await, sem `any` | Projeto JS puro |
-| `react-frontend-conventions` | Componentes React, TSX, hooks, Tailwind | Sem React |
-| `express-rest-http` | Rotas Express, HTTP, status, OpenAPI | Servidor não-Express |
-| `vitest-testing` | Testes com Vitest, mocks `vi`, AAA | Stack de testes diferente |
-| `repo-folder-structure` | Onde criar features, pages, controllers/services | Layout diferente |
-| `ui-ux-pro-max` | Design/revisão de UI, paletas, tipografia, a11y | Tarefa só backend |
+## Skills do projeto (carregar conforme a tarefa)
 
-**Ordem sugerida por tarefa:**
+> Liste apenas as skills realmente disponíveis no repositório. Apague esta seção
+> inteira se o projeto não usa skills.
 
-- **Backend HTTP:** `express-rest-http` → `repo-folder-structure` → `nodejs-typescript-conventions` → `code-standards`
-- **Frontend:** `ui-ux-pro-max` → `react-frontend-conventions` → `repo-folder-structure` → `nodejs-typescript-conventions` → `code-standards`
-- **Testes:** `vitest-testing` + a skill da camada testada
+| Skill              | Acionar para…                       | Não usar se…              |
+| ------------------ | ----------------------------------- | ------------------------- |
+| **`{{SKILL_1}}`**  | {{QUANDO_USAR_1}}                   | {{QUANDO_NAO_USAR_1}}     |
+| `{{SKILL_2}}`      | {{QUANDO_USAR_2}}                   | {{QUANDO_NAO_USAR_2}}     |
 
-## Subagents de review (opcional)
+**Agentes (subagentes)** em {{CAMINHO_DOS_AGENTES}}:
 
-<!--
-  Subagents rodam em CONTEXTO ISOLADO e revisam uma task SEM o viés de quem a implementou.
-  A FONTE única fica em `.agents/agents/<nome>.md`: Codex/Gemini/Antigravity a leem direto,
-  e Cursor e Claude Code recebem espelho por symlink (`.cursor/agents/` e `.claude/agents/`).
-  Escolha o subagent conforme o "Tipo de projeto" e a camada da task.
-  Exemplos prontos para copiar/adaptar em `example/.agents/agents/`.
--->
-
-| Subagent | Use para… | Tipo de projeto |
-| -------- | --------- | --------------- |
-| `frontend-reviewer` | Review independente de tasks de **frontend** (UI/hooks/a11y) | `frontend` ou `fullstack` |
-| `backend-reviewer` | Review independente de tasks de **backend** (API/HTTP/DB) | `backend` ou `fullstack` |
-| `task-reviewer` | Review genérico (uma camada só, ou projeto sem distinção clara) | qualquer |
-
-- **frontend** → use `frontend-reviewer`.
-- **backend** → use `backend-reviewer`.
-- **fullstack** → escolha pelo que a task tocou: `frontend-reviewer` para tasks de UI, `backend-reviewer` para tasks de API. Se a task cruza as duas camadas, rode os dois.
-- Roda **por task**, depois do `execute-task` e antes do `execute-review` (review consolidado da feature).
-
-> **Orquestrador `execute-tasks` (opcional):** se você usa a skill `execute-tasks` (executa todas as tasks da feature em ondas, via subagentes), além do reviewer acima defina também o subagente **implementador** `task-executor` — ele implementa cada task sob coordenação do orquestrador, que aciona o reviewer e fala com você. Fonte em `.agents/agents/task-executor.md`, espelhada por symlink como os demais.
+- `{{AGENTE_1}}` — {{RESPONSABILIDADE_1}}
+- `{{AGENTE_2}}` — {{RESPONSABILIDADE_2}}
 
 ## MCPs
 
-<!-- MCPs disponíveis/esperados neste projeto. -->
+> Liste os MCP servers usados e quando acioná-los. Apague se não houver.
 
-- **Context7** — documentação atualizada de linguagens/frameworks/libs.
-- **Playwright** (`browser_*`) — E2E, acessibilidade e validação visual no navegador.
+- **{{MCP_1}}** — {{QUANDO_USAR_O_MCP}}
 
-## Persistência do plano (opcional)
+## Notas de testes
 
-<!-- Se o seu harness tem "modo plano", defina onde salvar o plano aceito. -->
+> Resuma o padrão de cada nível de teste e o gate antes de aprovar.
 
-- Ao aceitar um plano, salve-o em `[.codex/plans/<timestamp>-<slug>.md]` e atualize-o se mudar.
-
-## Notas de testes E2E (opcional)
-
-<!-- Particularidades de E2E do projeto (portas, mocks de API, fixtures). -->
-
-- [ex.: `playwright.config.ts` sobe backend e frontend via `webServer`; intercepte chamadas externas com `page.route`.]
+- **Unit (`{{CMD_TEST_UNIT}}`):** {{PADRAO_UNIT}}
+- **Integração (`{{CMD_TEST_INTEGRATION}}`):** {{PADRAO_INTEGRATION}}
+- **E2E (`{{CMD_TEST_E2E}}`):** {{PADRAO_E2E}}
+- Antes de aprovar: {{COMANDOS_DE_GATE}}
