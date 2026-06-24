@@ -36,6 +36,7 @@ create-prd  →  create-techspec  →  create-tasks  →  execute-task  →  exe
 | `create-techspec` | Traduz o PRD em arquitetura e decisões técnicas        | `tasks/<NN>-<feature>/techspec.md`                      |
 | `create-tasks`    | Quebra em tarefas com testes, aprovadas antes de gerar | `tasks/<NN>-<feature>/tasks.md` + `[num]_task.md`       |
 | `execute-task`    | Implementa a próxima tarefa pendente                   | código + testes, marca `tasks.md`                       |
+| `execute-tasks`   | Orquestra **todas** as tasks pendentes em ondas via subagentes (`task-executor` + `task-reviewer`) — alternativa ao loop manual de `execute-task` | código + testes por task, `[num]_task_review.md`, marca `tasks.md` |
 | `execute-review`  | Code review via `git diff` contra TechSpec/Tasks/rules | `tasks/<NN>-<feature>/codereview.md`                    |
 | `execute-qa`      | QA funcional: E2E (Playwright), a11y, visual           | `tasks/<NN>-<feature>/qa.md` + `bugs.md`                |
 | `execute-bugfix`  | Corrige causa raiz dos bugs + testes de regressão      | `tasks/<NN>-<feature>/bugfix.md` + `bugs.md` atualizado |
@@ -85,6 +86,7 @@ Ordem típica para uma feature nova:
 2. **`create-techspec`** — gera `techspec.md`.
 3. **`create-tasks`** — gera `tasks.md` + tarefas (aprove a lista de alto nível primeiro).
 4. **`execute-task`** — implementa a próxima tarefa pendente. **Repita** até concluir todas.
+   - _Alternativa orquestrada:_ **`execute-tasks`** executa **todas** as tasks pendentes de uma vez — em ondas (sequencial ou paralelo conforme as dependências), com cada task implementada por um subagente `task-executor` e revisada por um `task-reviewer`, num ciclo implementação → review → correção. Requer esses subagentes instalados (ver [Subagents complementares](#subagents-complementares-opcional-claude-code)).
 5. **`execute-review`** — review consolidado da feature (gera `codereview.md`).
 6. **`execute-qa`** — QA funcional; gera `qa.md` e abre os bugs em `bugs.md`.
 7. **`execute-bugfix`** — corrige os bugs de `bugs.md`; volte ao **`execute-qa`** para revalidar. Repita o ciclo QA ↔ bugfix até o QA aprovar sem bugs abertos.
@@ -144,13 +146,23 @@ Há um reviewer **genérico** e dois **especializados por camada** — escolha c
 | `backend-reviewer` | Tasks de **backend** (API/HTTP/DB) | `backend` ou `fullstack` |
 | `task-reviewer` | Review genérico (uma camada só, ou sem distinção clara) | qualquer |
 
-> 📎 **Exemplos prontos para adaptar:** [`example/.claude/agents/`](example/.claude/agents/) — `frontend-reviewer`, `backend-reviewer` e `task-reviewer`. Cada um revisa um `[num]_task.md`, valida contra as convenções do projeto e a TechSpec, e grava `[num]_task_review.md` na pasta da feature. Copie o(s) que precisar para `.claude/agents/` e ajuste à sua stack/idioma/padrões.
+> 📎 **Exemplos prontos para adaptar:** [`example/.agents/agents/`](example/.agents/agents/) — `frontend-reviewer`, `backend-reviewer` e `task-reviewer` (a **fonte**; `example/.claude/agents/` são symlinks para ela). Cada um revisa um `[num]_task.md`, valida contra as convenções do projeto e a TechSpec, e grava `[num]_task_review.md` na pasta da feature. Ponha o(s) que precisar na fonte `.agents/agents/` e espelhe via **symlink** para `.claude/agents/` (e `.cursor/agents/` se usar Cursor) — nunca cópia; ajuste à sua stack/idioma/padrões.
 
 Onde entram no fluxo (por **task**, entre implementação e review da feature) — em projetos `fullstack`, escolha o reviewer pela camada que a task tocou:
 
 ```
 execute-task ──►  frontend-reviewer / backend-reviewer (subagent, contexto isolado)  ──►  execute-review
  implementa        review independente da task → [num]_task_review.md                       review da feature → codereview.md
+```
+
+### Orquestrar a feature inteira: `execute-tasks` + `task-executor`
+
+A skill **`execute-tasks`** executa **todas** as tasks pendentes da feature de uma vez, coordenando subagentes em **ondas** (sequenciais, ou paralelas quando as dependências e os arquivos permitem). Além dos reviewers acima, ela usa um subagente **implementador** — o **`task-executor`** — que implementa cada task e aplica as correções do review; o orquestrador (o loop principal) tria cada review, pergunta ao usuário quais _minors_ aplicar e marca o `tasks.md` após a aprovação. Exemplo pronto em [`example/.agents/agents/task-executor.md`](example/.agents/agents/task-executor.md).
+
+```
+execute-tasks ──►  task-executor (implementa)  ──►  task-reviewer (review)  ──►  ✓ marca tasks.md
+ orquestra em ondas        ▲                                │
+                           └────── ciclo de correção ◄──────┘
 ```
 
 ## Configurar o `AGENTS.md` do projeto
@@ -194,7 +206,7 @@ r-spec/
 ├── templates/
 │   └── AGENTS.md                 # template p/ copiar na raiz do seu projeto
 ├── example/
-│   ├── .claude/agents/           # subagents de exemplo: frontend-reviewer, backend-reviewer, task-reviewer
+│   ├── .claude/agents/           # subagents de exemplo: frontend-reviewer, backend-reviewer, task-reviewer, task-executor
 │   ├── .agents/skills/           # skills de convenção de exemplo (react-frontend-expert, etc.)
 │   └── tasks/01-painel-clima/    # feature de exemplo (referência viva)
 └── skills/
@@ -203,6 +215,7 @@ r-spec/
     ├── create-techspec/SKILL.md
     ├── create-tasks/SKILL.md
     ├── execute-task/SKILL.md
+    ├── execute-tasks/SKILL.md  # orquestrador (subagentes em ondas)
     ├── execute-review/         # SKILL.md + references/{frontend,backend}.md
     ├── execute-qa/             # SKILL.md + references/{frontend,backend}.md
     └── execute-bugfix/SKILL.md

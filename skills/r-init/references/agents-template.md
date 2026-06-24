@@ -1,9 +1,11 @@
 <!--
   Template de AGENTS.md — copie para a RAIZ do seu projeto e preencha.
   Este arquivo é o "mapa" que os agentes leem: tipo do projeto, stack, comandos,
-  regras do projeto e quais skills de convenção carregar. Lido nativamente por
-  Codex/Cursor/etc. No Claude Code, aponte para ele a partir do CLAUDE.md
-  (ex.: "Siga @AGENTS.md").
+  regras do projeto e quais skills de convenção carregar. Este AGENTS.md (raiz) é o
+  mapa de convenções UNIVERSAL: Cursor, Codex e Gemini/Antigravity o leem nativamente;
+  o Claude Code o alcança por um CLAUDE.md apontando para "@AGENTS.md". Já os subagents
+  e as skills de convenção têm FONTE ÚNICA em `.agents/`, espelhada por symlink para os
+  harnesses com pasta própria — `.cursor/` (Cursor) e `.claude/` (Claude Code).
 
   OBRIGATÓRIO: declare o "Tipo de projeto" (frontend / backend / fullstack) logo
   abaixo — as skills de processo (execute-review, execute-qa) e os subagents de
@@ -107,13 +109,14 @@ Consulte o `SKILL.md` da skill em `.agents/skills/<nome>/` (ou `.claude/skills/<
 - **Frontend:** `ui-ux-pro-max` → `react-frontend-conventions` → `repo-folder-structure` → `nodejs-typescript-conventions` → `code-standards`
 - **Testes:** `vitest-testing` + a skill da camada testada
 
-## Subagents de review (opcional — Claude Code)
+## Subagents de review (opcional)
 
 <!--
   Subagents rodam em CONTEXTO ISOLADO e revisam uma task SEM o viés de quem a implementou.
-  São um recurso do Claude Code (em `.claude/agents/`); outros harnesses podem não ter
-  equivalente. Escolha o subagent conforme o "Tipo de projeto" e a camada da task.
-  Exemplos prontos para copiar/adaptar em `example/.claude/agents/`.
+  A FONTE única fica em `.agents/agents/<nome>.md`: Codex/Gemini/Antigravity a leem direto,
+  e Cursor e Claude Code recebem espelho por symlink (`.cursor/agents/` e `.claude/agents/`).
+  Escolha o subagent conforme o "Tipo de projeto" e a camada da task.
+  Exemplos prontos para copiar/adaptar em `example/.agents/agents/`.
 -->
 
 | Subagent | Use para… | Tipo de projeto |

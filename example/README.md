@@ -14,4 +14,4 @@ Mostra:
 
 ## Subagent de exemplo
 
-[`agents/task-reviewer.md`](.agents/task-reviewer.md) é um **exemplo de subagent**: um revisor de task independente, que roda em contexto isolado e gera `[num]_task_review.md`. Copie-o para `.claude/agents/` ou `.agents/agents/` no seu projeto e adapte às suas convenções — cada projeto cria os subagents que precisa. Veja a seção "Subagents complementares" no [README principal](../README.md).
+[`.agents/agents/task-reviewer.md`](.agents/agents/task-reviewer.md) é um **exemplo de subagent**: um revisor de task independente, que roda em contexto isolado e gera `[num]_task_review.md`. A **fonte** vive em `.agents/agents/` e cada harness com pasta própria a consome por **symlink** (aqui, `.claude/agents/task-reviewer.md` → `../../.agents/agents/task-reviewer.md`). No seu projeto, ponha o subagent na fonte `.agents/agents/` e espelhe via symlink para `.claude/agents/` (e `.cursor/agents/` se usar Cursor) — nunca cópia; adapte às suas convenções. Veja a seção "Subagents complementares" no [README principal](../README.md).

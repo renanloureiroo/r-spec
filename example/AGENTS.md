@@ -85,6 +85,8 @@ Subagents em `.claude/agents/` revisam uma task em **contexto isolado** (sem o v
 
 > Task que cruza as duas camadas: rode `frontend-reviewer` e `backend-reviewer`.
 
+> **Orquestrador `execute-tasks`:** para executar todas as tasks da feature de uma vez (em ondas, via subagentes), o projeto também define o subagente **implementador** `task-executor` — ele implementa cada task e aplica as correções do review, enquanto o orquestrador aciona o reviewer da camada e marca o `tasks.md`.
+
 ## MCPs
 
 <!-- MCPs disponíveis/esperados neste projeto. -->
